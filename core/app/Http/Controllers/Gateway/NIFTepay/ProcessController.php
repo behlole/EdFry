@@ -24,6 +24,7 @@ class ProcessController extends Controller
         $currency = json_decode(json_decode($deposit)->gateway->supported_currencies)->PKR;
 //        dd(json_decode(json_decode($deposit)->gateway->parameters)->Merchant_Name->value);
         $deposit = json_decode($deposit);
+
         $merchant_creds = json_decode($deposit->gateway->parameters);
         $deposit->user_id = auth()->guard('user')->user()->id;
         $val['pp_Version'] = "1.1";

@@ -199,7 +199,6 @@ class LoginController extends Controller
         $userLogin->os = @$info['os_platform'];
         $userLogin->country = @implode(',', $info['country']);
         $userLogin->save();
-        dd($request);
 
         return redirect()->intended('/');
     }

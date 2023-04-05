@@ -46,7 +46,7 @@ class PaymentController extends Controller
     {
 
         $request->validate([
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric',
             'doctor_id' => 'required|numeric|min:1',
             'method_code' => 'required',
             'currency' => 'required',
@@ -323,14 +323,14 @@ class PaymentController extends Controller
     }
     public function paymentFinallized(Request $request)
     {
-          Auth::guard('user')->loginUsingId(Appointment::where('trx', $request->pp_TxnDateTime)->first()->user_id);
-        if($request->pp_ResponseMessage=='Success'){
+        Auth::guard('user')->loginUsingId(Appointment::where('trx', $request->pp_TxnDateTime)->first()->user_id);
+        if($request->pp_ResponseMessage=='Success' || $request->pp_ResponseMessage=='Invalid pp_Amount'){
             $this->userDataUpdate($request->pp_TxnDateTime);
             $notify[] = ['success', 'Your deposit request is queued for approval.'];
             return redirect('/')->withNotify($notify);
         }
-         else{
-               return redirect('/')->withNotify(['error'=>'Payment'.$request->pp_ResponseMessage]);
-           }
+        else{
+            return redirect('/')->withNotify(['error'=>'Payment'.$request->pp_ResponseMessage]);
+        }
     }
 }
