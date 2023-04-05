@@ -1,0 +1,192 @@
+{
+    "breadcrumb": {
+        "builder": true,
+        "no_selection":true,
+        "name": "Breadcrumb Section",
+        "content": {
+            "images":{
+                "image":{
+                    "size":"1150x700"
+                }
+            }
+        }
+    },
+    "banner": {
+        "builder": true,
+        "no_selection":true,
+        "name": "Banner Section",
+        "element": {
+            "images":{
+                "image":{
+                    "size":"1150x700"
+                }
+            },
+            "heading": "text",
+            "details": "textarea",
+            "modal": false
+        }
+    },
+    "sector": {
+        "builder": true,
+        "name": "Sector Section",
+        "content": {
+            "heading": "text",
+            "details": "textarea"
+        }
+    },
+    "mentor": {
+        "builder": true,
+        "name": "Mentor Section",
+        "content": {
+            "heading": "text",
+            "details": "textarea"
+        }
+    },
+    "search": {
+        "builder": true,
+        "name": "Search Section",
+        "content": {
+            "images":{
+                "image":{
+                    "size":"1600x640"
+                }
+            },
+            "heading": "text",
+            "details": "textarea"
+        }
+    },
+    "testimonial": {
+        "builder": true,
+        "name": "Testimonial Section",
+        "content": {
+            "heading": "text",
+            "details": "textarea"
+        },
+        "element": {
+            "name": "text",
+            "designation": "text",
+            "quote": "textarea",
+            "images":{
+                "image":{
+                    "size":"80x80"
+                }
+            },
+            "modal": true
+        }
+    },
+    "faq": {
+        "builder": true,
+        "name": "FAQ Section",
+        "content": {
+            "heading": "text",
+            "details": "text"
+        },
+        "element": {
+            "question": "text",
+            "answer": "textarea",
+            "modal": true
+        }
+    },
+    "partner": {
+        "builder": true,
+        "name": "Partner Section",
+
+        "element": {
+            "name": "text",
+            "url": "text",
+            "images":{
+                "image":{
+                    "size":"120x48"
+                }
+            },
+            "modal": true
+        }
+    },
+    "map": {
+        "builder": false,
+        "name": "Map Section"
+    },
+    "footer": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Footer Section",
+        "content": {
+            "images":{
+                "emergency_contact_image":{
+                    "size":"45x40"
+                },
+                "support_email_image":{
+                    "size":"45x40"
+                }
+            },
+            "emergency_contact": "text",
+            "support_email": "text",
+            "footer_details": "textarea",
+            "subscribe_heading": "text",
+            "subscribe_details": "textarea",
+            "copyright_details": "text"
+        },
+        "element": {
+            "footer_contact_details": "text",
+            "footer_contact_icon": "icon",
+            "modal": true
+        }
+    },
+    "feature": {
+        "builder": true,
+        "name": "Featured Section",
+        "content": {
+            "heading": "text",
+            "details": "text"
+        }
+    },
+
+    "blog": {
+        "builder": true,
+        "name": "Blog Section",
+        "content": {
+            "heading": "text",
+            "details": "text"
+        },
+        "element": {
+            "images":{
+                "image":{
+                    "size":"730x400"
+                }
+            },
+            "title": "text",
+            "category": "text",
+            "description": "textarea-nic",
+            "modal": false
+        }
+    },
+    "social_icon": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Social Icons",
+        "element": {
+            "title": "text",
+            "social_icon": "icon",
+            "url": "text",
+            "modal": true
+        }
+    },
+    "contact_us": {
+        "builder": true,
+        "no_selection": true,
+        "name": "Contact Us",
+        "content": {
+            "heading": "text",
+            "details": "textarea",
+            "google_map_key": "text",
+            "latitude": "text",
+            "longitude": "text"
+        },
+        "element": {
+            "heading": "text",
+            "details": "textarea",
+            "icon": "icon",
+            "modal": true
+        }
+    }
+}
