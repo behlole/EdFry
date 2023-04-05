@@ -198,7 +198,7 @@ class ManageDoctorsController extends Controller
             'qualification' => 'required|string|max:180',
             'address' => 'required|string|max:191',
             'location_id' => 'required|numeric|gt:0',
-            'fees' => 'required|numeric|gt:0',
+            'fees' => 'required|numeric',
             'rating' => 'required|numeric|gt:0|max:5',
             'about' => 'required',
             ]);
