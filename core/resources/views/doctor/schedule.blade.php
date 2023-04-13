@@ -2,6 +2,8 @@
 @push('style')
     <link rel="stylesheet" href="{{ asset('assets/doctor/css/bootstrap-material-datetimepicker-bs4.min.css')}}">
     <link rel="stylesheet" href="{{ asset('assets/doctor/css/Material+Icons.css')}}">
+
+
 @endpush
 @section('panel')
     <div class="row justify-content-center">
@@ -109,7 +111,6 @@
 
         (function ($) {
             'use strict';
-
             $('select[name=slot_type]').val("{{$doctor->slot_type}}");
 
             var check_slot_type = $('select[name="slot_type"]').val();
@@ -137,19 +138,26 @@
                                 </div>
                             </div>
                         </div>`;
-            let weekly_div = `<div class="card-body weekly_div">
-                            <div class="form-row">
-                                <div class="col-md-12">
-                                    <label class="form-control-label font-weight-bold">Maximum Week</label>
-                                    <input class="form-control" type="number" name="max_serial"  value="{{ $doctor->max_serial }}" placeholder="@lang('Example') : 20" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-control-label font-weight-bold">New End Time</label>
-                                    <input class="form-control" type="number" name="max_serial"  value="{{ $doctor->max_serial }}" placeholder="@lang('Example') : 20" required>
-                                </div>
+            let weekly_div=`<div class="card-body" id="weekly_div">
+                        <div class="form-row">
+                            <div class="col-md-4">
+                                <label class="form-control-label font-weight-bold">Maximum Week</label>
+                                <input class="form-control" type="number" name="max_serial"  value="{{ $doctor->max_serial }}" placeholder="@lang('Example') : 20" required>
                             </div>
-                        </div>`;
-
+                            <div class="col-md-4">
+                                <label class="form-control-label font-weight-bold">Select Concurrency Frequency</label>
+                                <select class="form-control" name="cars" id="cars" multiple data-live-search="true">
+                                    <option value="everyday">Everyday</option>
+                                    <option value="every-monday">Every Monday</option>
+                                    <option value="every-tuesday">Every Tuesday</option>
+                                    <option value="every-thursday">Every Thursday</option>
+                                    <option value="every-friday">Every Friday</option>
+                                    <option value="every-saturday">Every Saturday</option>
+                                    <option value="every-sunday">Every Sunday</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>`;
             var timePicker = function () {
                 $('.timepicker').bootstrapMaterialDatePicker({
                     format: 'HH:mm',
@@ -171,7 +179,7 @@
                 $('#slot-value').html(serial_div);
             }
             if (check_slot_type == 3) {
-                $('#slot-value').html(weekly_div);
+                $('#weekly_div').removeClass('d-none');
             }
 
             $("#slot-type").on('change', function () {
@@ -187,7 +195,9 @@
                     $('.end-time').removeClass('d-none');
                 }
                 if (check_slot_type == 3) {
-                    $('#slot-value').html(weekly_div);
+                    $('#slot-value').html(weekly_div)
+                    $('#cars').selectpicker()
+
                 }
                 timePicker();
 
@@ -200,7 +210,6 @@
                 $('.end-time').addClass('d-none');
                 $('.month-select').addClass('d-none');
                 $('.serial_div').remove();
-                $('.weekly_div').remove();
                 $('.time_div').remove();
             }
         })(jQuery);

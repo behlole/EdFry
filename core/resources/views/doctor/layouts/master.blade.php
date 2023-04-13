@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap">
     <!-- bootstrap 4  -->
     <link rel="stylesheet" href="{{ asset('assets/doctor/css/vendor/bootstrap.min.css') }}">
+
     <!-- bootstrap toggle css -->
     <link rel="stylesheet" href="{{asset('assets/doctor/css/vendor/bootstrap-toggle.min.css')}}">
     <!-- fontawesome 5  -->
@@ -39,8 +40,12 @@
     <link rel="stylesheet" href="{{asset('assets/doctor/css/vendor/bootstrap-pincode-input.css')}}">
     <!-- dashdoard main css -->
     <link rel="stylesheet" href="{{asset('assets/doctor/css/app.css')}}">
-
-
+    <script src="{{asset('assets/doctor/js/vendor/jquery-3.5.1.min.js')}}"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
     @stack('style')
 </head>
 <body>
@@ -50,7 +55,6 @@
 
 
 <!-- jQuery library -->
-<script src="{{asset('assets/doctor/js/vendor/jquery-3.5.1.min.js')}}"></script>
 <!-- bootstrap js -->
 <script src="{{asset('assets/doctor/js/vendor/bootstrap.bundle.min.js')}}"></script>
 <!-- bootstrap-toggle js -->
@@ -60,7 +64,6 @@
 <script src="{{asset('assets/doctor/js/vendor/jquery.slimscroll.min.js')}}"></script>
 <!-- custom select box js -->
 <script src="{{asset('assets/doctor/js/vendor/jquery.nice-select.min.js')}}"></script>
-
 
 @include('doctor.partials.notify')
 @stack('script-lib')
@@ -75,6 +78,8 @@
 <script src="{{asset('assets/doctor/js/vendor/datatables.min.js')}}"></script>
 <!-- main js -->
 <script src="{{asset('assets/doctor/js/app.js')}}"></script>
+
+
 
 {{-- LOAD NIC EDIT --}}
 <script type="text/javascript">
