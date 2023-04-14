@@ -3,7 +3,6 @@
     <link rel="stylesheet" href="{{ asset('assets/doctor/css/bootstrap-material-datetimepicker-bs4.min.css')}}">
     <link rel="stylesheet" href="{{ asset('assets/doctor/css/Material+Icons.css')}}">
 
-
 @endpush
 @section('panel')
     <div class="row justify-content-center">
@@ -57,6 +56,22 @@
                 <div class="card mt-4" id="slot-value">
 
                 </div>
+                <div
+                    class="weekly-frequency-chart row justify-content-center mt-4 @if($doctor->slot_type!=3) d-none @endif">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="form-row">
+                                    <h5>@lang('Select Concurrency Frequency Per Day')</h5>
+                                    <div class="col-md-12" id="recurringChart">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="form-group">
@@ -112,9 +127,9 @@
         (function ($) {
             'use strict';
             $('select[name=slot_type]').val("{{$doctor->slot_type}}");
-
-            var check_slot_type = $('select[name="slot_type"]').val();
-            var time_div = `<div class="card-body time_div">
+            let weekConcurrency = ['everyday', 'every-monday', 'every-tuesday', 'every-thursday', 'every-friday', 'every-saturday', 'every-sunday'];
+            let check_slot_type = $('select[name="slot_type"]').val();
+            let time_div = `<div class="card-body time_div">
                             <div class="form-row">
                                 <div class="col-md-4">
                                     <label class="form-control-label font-weight-bold">Time Slot Duration <span class="small-text">(@lang('minutes'))</span></label>
@@ -130,7 +145,7 @@
                                 </div>
                             </div>
                         </div>`;
-            var serial_div = `<div class="card-body serial_div">
+            let serial_div = `<div class="card-body serial_div">
                             <div class="form-row">
                                 <div class="col-md-12">
                                     <label class="form-control-label font-weight-bold">Maximum Serial</label>
@@ -138,7 +153,7 @@
                                 </div>
                             </div>
                         </div>`;
-            let weekly_div=`<div class="card-body" id="weekly_div">
+            let weekly_div = `<div class="card-body" id="weekly_div">
                         <div class="form-row">
                             <div class="col-md-4">
                                 <label class="form-control-label font-weight-bold">Maximum Week</label>
@@ -146,7 +161,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-control-label font-weight-bold">Select Concurrency Frequency</label>
-                                <select class="form-control" name="cars" id="cars" multiple data-live-search="true">
+                                <select class="form-control" name="recurring_frequency" id="recurring_frequency" multiple>
                                     <option value="everyday">Everyday</option>
                                     <option value="every-monday">Every Monday</option>
                                     <option value="every-tuesday">Every Tuesday</option>
@@ -158,7 +173,7 @@
                             </div>
                         </div>
                     </div>`;
-            var timePicker = function () {
+            let timePicker = function () {
                 $('.timepicker').bootstrapMaterialDatePicker({
                     format: 'HH:mm',
                     shortTime: false,
@@ -181,7 +196,7 @@
             if (check_slot_type == 3) {
                 $('#weekly_div').removeClass('d-none');
             }
-
+            let recurringFrequency = [];
             $("#slot-type").on('change', function () {
                 var check_slot_type = $('select[name="slot_type"]').val();
                 removeAllDivs()
@@ -195,8 +210,16 @@
                     $('.end-time').removeClass('d-none');
                 }
                 if (check_slot_type == 3) {
+                    $('.weekly-frequency-chart').removeClass('d-none')
                     $('#slot-value').html(weekly_div)
-                    $('#cars').selectpicker()
+                    $('#recurring_frequency').selectpicker().on('changed.bs.select', (e, clickedIndex) => {
+                        if (recurringFrequency.includes(weekConcurrency[clickedIndex])) {
+                            recurringFrequency.splice(recurringFrequency.indexOf(weekConcurrency[clickedIndex]), 1);
+                        } else {
+                            recurringFrequency.push(weekConcurrency[clickedIndex]);
+                        }
+                        updateConcurrencyView(recurringFrequency)
+                    })
 
                 }
                 timePicker();
@@ -207,10 +230,66 @@
 
             function removeAllDivs() {
                 $('.start-time').addClass('d-none');
+                $('.weekly-frequency-chart').addClass('d-none');
                 $('.end-time').addClass('d-none');
                 $('.month-select').addClass('d-none');
                 $('.serial_div').remove();
                 $('.time_div').remove();
+            }
+
+            function addTimeRow(singleDay,index) {
+                return $(`.body-${singleDay}`).append(returnTimeRow(singleDay,index))
+            }
+
+            function returnTimeRow(singleDay,index) {
+                return `<div class="flex flex-row justify-content-between" id="row-${singleDay}-${index}"  style="display: flex">
+                                    <div style="width: 40%">
+                                     <label for="from_time_${singleDay}">From Time:</label>
+                                      <input class="form-control timepicker" value="0.00" type="text" name="from_time${singleDay}" id="from_time_${singleDay}" />
+                                    </div>
+                                    <div style="width: 40%">
+                                                    <label for="to_time_${singleDay}">To Time:</label>
+                                    <div style="display: flex;flex-direction: row">
+                                         <input class="form-control timepicker" style="width: 80%" value="0.00" type="text" name="to_time_${singleDay}" id="to_time_${singleDay}" />
+                                        <button type="button" class="btn btn-outline-danger" id="remove-button-${singleDay}-${index}" style="width: 20%">X</button>
+                                     </div>
+                                    </div>
+                                </div>`
+            }
+
+            function updateConcurrencyView(recurringFrequency) {
+                $('#recurringChart').html('');
+                recurringFrequency.forEach((singleDay, index) => {
+                    $('#recurringChart').append(`
+                    <div id="accordion">
+                      <div class="card">
+                        <div class="card-header" id="heading${index}"  data-toggle="collapse" data-target="#${singleDay}" aria-expanded="true" aria-controls="${singleDay}>
+                          <h5 class="mb-0">
+                            <a class="btn btn-link"">
+                              ${singleDay}
+                            </a>
+                          </h5>
+                        </div>
+
+                        <div id="${singleDay}" class="collapse" aria-labelledby="${singleDay}" data-parent="#accordion">
+                          <button class="btn btn--primary" style="display: flex;margin: auto;width: 30%;flex-direction:column-reverse;align-items: center;margin-top: 2%" id="button-${index}" type="button">Add</button>
+                          <div class="card-body time-row-body body-${singleDay}">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+`)
+                    $(`#button-${index}`).on('click', () => {
+                        addTimeRow(singleDay,index)
+                        timePicker()
+
+                    })
+
+                    $(`#remove-button-${singleDay}-${index}`).on('click',function(){
+                        $(`#row-${singleDay}-${index}`).remove()
+                    })
+                })
+                timePicker()
             }
         })(jQuery);
 
