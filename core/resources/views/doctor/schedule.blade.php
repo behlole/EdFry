@@ -238,20 +238,20 @@
             }
 
             function addTimeRow(singleDay,index) {
-                return $(`.body-${singleDay}`).append(returnTimeRow(singleDay,index))
+                return $(`#body-${singleDay}`).append(returnTimeRow(singleDay,index,document.getElementById(`body-${singleDay}`).childElementCount))
             }
 
-            function returnTimeRow(singleDay,index) {
-                return `<div class="flex flex-row justify-content-between" id="row-${singleDay}-${index}"  style="display: flex">
+            function returnTimeRow(singleDay,index,latestChildIndex) {
+                return `<div class="flex flex-row justify-content-between" id="row-${singleDay}-${index}-${latestChildIndex}"  style="display: flex">
                                     <div style="width: 40%">
-                                     <label for="from_time_${singleDay}">From Time:</label>
-                                      <input class="form-control timepicker" value="0.00" type="text" name="from_time${singleDay}" id="from_time_${singleDay}" />
+                                     <label for="from_time_${singleDay}_${index}_${latestChildIndex}">From Time:</label>
+                                      <input class="form-control timepicker" value="0.00" type="text" name="from_time_${singleDay}_${index}_${latestChildIndex}" id="from_time_${singleDay}_${index}_${latestChildIndex}" />
                                     </div>
                                     <div style="width: 40%">
-                                                    <label for="to_time_${singleDay}">To Time:</label>
+                                                    <label for="to_time_${singleDay}_${index}_${latestChildIndex}">To Time:</label>
                                     <div style="display: flex;flex-direction: row">
-                                         <input class="form-control timepicker" style="width: 80%" value="0.00" type="text" name="to_time_${singleDay}" id="to_time_${singleDay}" />
-                                        <button type="button" class="btn btn-outline-danger" id="remove-button-${singleDay}-${index}" style="width: 20%">X</button>
+                                         <input class="form-control timepicker" style="width: 80%" value="0.00" type="text" name="to_time_${singleDay}_${index}_${latestChildIndex}" id="to_time_${singleDay}_${index}_${latestChildIndex}" />
+                                        <button type="button" class="btn btn-outline-danger" id="remove-button-${singleDay}-${index}-${latestChildIndex}" style="width: 20%">X</button>
                                      </div>
                                     </div>
                                 </div>`
@@ -273,7 +273,7 @@
 
                         <div id="${singleDay}" class="collapse" aria-labelledby="${singleDay}" data-parent="#accordion">
                           <button class="btn btn--primary" style="display: flex;margin: auto;width: 30%;flex-direction:column-reverse;align-items: center;margin-top: 2%" id="button-${index}" type="button">Add</button>
-                          <div class="card-body time-row-body body-${singleDay}">
+                          <div class="card-body time-row-body" id="body-${singleDay}">
                           </div>
                         </div>
                       </div>
@@ -281,12 +281,12 @@
 `)
                     $(`#button-${index}`).on('click', () => {
                         addTimeRow(singleDay,index)
+                        let childElementCount=document.getElementById(`body-${singleDay}`).childElementCount-1;
+                        $(`#remove-button-${singleDay}-${index}-${childElementCount}`).on('click',()=>{
+                            $(`#row-${singleDay}-${index}-${childElementCount}`).remove()
+                        })
                         timePicker()
 
-                    })
-
-                    $(`#remove-button-${singleDay}-${index}`).on('click',function(){
-                        $(`#row-${singleDay}-${index}`).remove()
                     })
                 })
                 timePicker()
