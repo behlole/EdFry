@@ -248,19 +248,18 @@ class DoctorController extends Controller
 
     }
 
-    private function returnSingleDayObject(&$day,$index,$firstPart,$values)
+    private function returnSingleDayObject(&$day,$index,$firstPart,$values,$keys)
     {
-        $allTimes=array();
+//        dd($values);
+        dd($keys);
         foreach($day as $secondIndex=>$singleTime){
             if ($firstPart[0]=='from'){
-                array_push($allTimes,['from'=>$values[$index],'date'=>$singleTime]);
-                $day[$secondIndex]=['from'=>$values[$index],'date'=>$singleTime];
+                $day[$secondIndex]=['from'=>$values[$index],'incomingDate'=>$singleTime];
             }
             elseif($firstPart[0]=='to'){
-                $day[$secondIndex]=['to'=>$values[$index],'date'=>$singleTime];
+                $day[$secondIndex]=['to'=>$values[$index],'date'=>$singleTime['incomingDate'],'from'=>$singleTime['from']];
             }
         }
-        return $allTimes;
     }
     private function returnNextDays($dayName,$numberOfDays){
         $mondayTimestamps=array();
@@ -375,7 +374,6 @@ class DoctorController extends Controller
                 array_push($keys,$id);
                 array_push($values,$value);
             }
-            $timePairs=array();
             foreach ($keys as $index=>$key){
                 $singleKeyArray=explode('-',$key);
                 $firstPart=explode('_',$singleKeyArray[0]);
@@ -389,7 +387,7 @@ class DoctorController extends Controller
                     $secondPart[0]=='saturday' ||
                     $secondPart[0]=='sunday'
                 ){
-                    dd($this->returnSingleDayObject($day[$secondPart[0]],$index,$firstPart,$values));
+                    $this->returnSingleDayObject($day[$secondPart[0]],$index,$firstPart,$values,$keys);
                 }
             }
             dd($day);
