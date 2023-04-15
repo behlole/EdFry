@@ -248,6 +248,32 @@ class DoctorController extends Controller
 
     }
 
+    private function returnSingleDayObject(&$day,$index,$firstPart,$values)
+    {
+        $allTimes=array();
+        foreach($day as $secondIndex=>$singleTime){
+            if ($firstPart[0]=='from'){
+                array_push($allTimes,['from'=>$values[$index],'date'=>$singleTime]);
+                $day[$secondIndex]=['from'=>$values[$index],'date'=>$singleTime];
+            }
+            elseif($firstPart[0]=='to'){
+                $day[$secondIndex]=['to'=>$values[$index],'date'=>$singleTime];
+            }
+        }
+        return $allTimes;
+    }
+    private function returnNextDays($dayName,$numberOfDays){
+        $mondayTimestamps=array();
+        $timestamp = strtotime(Carbon::now()->toDateTimeString());
+        $currentNext=strtotime($dayName, $timestamp);
+
+        for ($i = 1; $i <= intval($numberOfDays); $i++) {
+            $nextMonday = strtotime($dayName, $currentNext);
+            $currentNext=$nextMonday;
+            array_push($mondayTimestamps,Carbon::parse($currentNext)->toDateString());
+        }
+        return $mondayTimestamps;
+    }
     public function scheduleManage(Request $request)
     {
         if ($request->slot_type != 3) {
@@ -343,10 +369,31 @@ class DoctorController extends Controller
                 'every-sunday',
                 'everyday'
             ]);
+            $keys=array();
+            $values=array();
             foreach($filteredRequest as $id => $value){
-                dd( "My key is ". $id . " And My value is ". $value);
+                array_push($keys,$id);
+                array_push($values,$value);
+            }
+            $timePairs=array();
+            foreach ($keys as $index=>$key){
+                $singleKeyArray=explode('-',$key);
+                $firstPart=explode('_',$singleKeyArray[0]);
+                $secondPart=explode('_',$singleKeyArray[1]);
+                if(
+                    $secondPart[0]=='monday' ||
+                    $secondPart[0]=='tuesday' ||
+                    $secondPart[0]=='wednesday' ||
+                    $secondPart[0]=='thursday' ||
+                    $secondPart[0]=='friday' ||
+                    $secondPart[0]=='saturday' ||
+                    $secondPart[0]=='sunday'
+                ){
+                    dd($this->returnSingleDayObject($day[$secondPart[0]],$index,$firstPart,$values));
+                }
             }
             dd($day);
+
         } else {
             $notify[] = ['error', 'Please select maximum serial or time duration.'];
             return back()->withNotify($notify);
@@ -714,17 +761,6 @@ class DoctorController extends Controller
         }
     }
 
-    private function returnNextDays($dayName,$numberOfDays){
-        $mondayTimestamps=array();
-        $timestamp = strtotime(Carbon::now()->toDateTimeString());
-        $currentNext=strtotime($dayName, $timestamp);
 
-        for ($i = 1; $i <= intval($numberOfDays); $i++) {
-            $nextMonday = strtotime($dayName, $currentNext);
-            $currentNext=$nextMonday;
-            array_push($mondayTimestamps,Carbon::parse($currentNext)->toDateString());
-        }
-        return $mondayTimestamps;
-    }
 }
 
