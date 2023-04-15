@@ -127,7 +127,7 @@
         (function ($) {
             'use strict';
             $('select[name=slot_type]').val("{{$doctor->slot_type}}");
-            let weekConcurrency = ['everyday', 'every-monday', 'every-tuesday', 'every-thursday', 'every-friday', 'every-saturday', 'every-sunday'];
+            let weekConcurrency = ['everyday', 'every-monday', 'every-tuesday','every-wednesday', 'every-thursday', 'every-friday', 'every-saturday', 'every-sunday'];
             let check_slot_type = $('select[name="slot_type"]').val();
             let time_div = `<div class="card-body time_div">
                             <div class="form-row">
@@ -165,6 +165,7 @@
                                     <option value="everyday">Everyday</option>
                                     <option value="every-monday">Every Monday</option>
                                     <option value="every-tuesday">Every Tuesday</option>
+                                    <option value="every-wednesday">Every Wednesday</option>
                                     <option value="every-thursday">Every Thursday</option>
                                     <option value="every-friday">Every Friday</option>
                                     <option value="every-saturday">Every Saturday</option>
@@ -261,6 +262,7 @@
                 $('#recurringChart').html('');
                 recurringFrequency.forEach((singleDay, index) => {
                     $('#recurringChart').append(`
+                    <input type="hidden" name="${singleDay}" value="true"/>
                     <div id="accordion">
                       <div class="card">
                         <div class="card-header" id="heading${index}"  data-toggle="collapse" data-target="#${singleDay}" aria-expanded="true" aria-controls="${singleDay}>

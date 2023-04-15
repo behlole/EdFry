@@ -5,17 +5,17 @@ namespace App\Http\Controllers\Doctor;
 use App\Appointment;
 use App\Deposit;
 use App\Doctor;
-use App\GeneralSetting;
-use App\Lib\GoogleAuthenticator;
-use App\Http\Controllers\Controller;
 use App\Education;
 use App\Experience;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\GeneralSetting;
+use App\Http\Controllers\Controller;
+use App\Lib\GoogleAuthenticator;
 use App\Rules\FileTypeValidate;
 use App\SocialIcon;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class DoctorController extends Controller
 {
@@ -24,12 +24,13 @@ class DoctorController extends Controller
     {
         $page_title = 'Dashboard';
         $doctor = Auth::guard('doctor')->user();
-        $total_online_earn = Deposit::where('doctor_id',$doctor->id)->where('status',1)->sum('amount');
+        $total_online_earn = Deposit::where('doctor_id', $doctor->id)->where('status', 1)->sum('amount');
         $total_cash_earn = $doctor->balance - $total_online_earn;
-        $appointment_done = Appointment::where('doctor_id',$doctor->id)->where('try',1)->where('is_complete',1)->where('d_status',0)->count();
-        $new_appointment = Appointment::where('doctor_id',$doctor->id)->where('try',1)->where('is_complete',0)->where('d_status',0)->count();
-        return   view('doctor.dashboard',compact('page_title','total_online_earn','total_cash_earn','appointment_done','new_appointment'));
+        $appointment_done = Appointment::where('doctor_id', $doctor->id)->where('try', 1)->where('is_complete', 1)->where('d_status', 0)->count();
+        $new_appointment = Appointment::where('doctor_id', $doctor->id)->where('try', 1)->where('is_complete', 0)->where('d_status', 0)->count();
+        return view('doctor.dashboard', compact('page_title', 'total_online_earn', 'total_cash_earn', 'appointment_done', 'new_appointment'));
     }
+
     public function profile()
     {
         $page_title = 'Profile';
@@ -46,15 +47,15 @@ class DoctorController extends Controller
         $doctor = Auth::guard('doctor')->user();
 
         $doctor_image = $doctor->image;
-        if($request->hasFile('image')) {
-            try{
+        if ($request->hasFile('image')) {
+            try {
 
                 $location = imagePath()['doctor']['path'];
                 $size = imagePath()['doctor']['size'];
                 $old = $doctor->image;
-                $doctor_image = uploadImage($request->image, $location , $size, $old);
+                $doctor_image = uploadImage($request->image, $location, $size, $old);
 
-            }catch(\Exception $exp) {
+            } catch (\Exception $exp) {
                 return back()->withNotify(['error', 'Could not upload the image.']);
             }
         }
@@ -92,20 +93,23 @@ class DoctorController extends Controller
         return redirect()->route('doctor.password')->withNotify($notify);
     }
 
-    public function schedule(){
+    public function schedule()
+    {
         $page_title = 'Manage Schedule';
         $doctor = Auth::guard('doctor')->user();
-        return view('doctor.schedule',compact('page_title','doctor'));
+        return view('doctor.schedule', compact('page_title', 'doctor'));
     }
 
-    public function about(){
+    public function about()
+    {
 
         $page_title = 'About';
         $doctor = Auth::guard('doctor')->user();
-        return view('doctor.about',compact('page_title','doctor'));
+        return view('doctor.about', compact('page_title', 'doctor'));
     }
 
-    public function aboutUpdate(Request $request){
+    public function aboutUpdate(Request $request)
+    {
 
         $this->validate($request, [
             'about' => 'required',
@@ -120,14 +124,16 @@ class DoctorController extends Controller
         return back()->withNotify($notify);
     }
 
-    public function educationAll(){
+    public function educationAll()
+    {
 
         $page_title = 'All Education Details';
         $education_details = Education::where('doctor_id', Auth::guard('doctor')->user()->id)->get();
-        return view('doctor.education',compact('page_title','education_details'));
+        return view('doctor.education', compact('page_title', 'education_details'));
     }
 
-    public function educationStore(Request $request){
+    public function educationStore(Request $request)
+    {
 
         $this->validate($request, [
             'institution' => 'required|max:190',
@@ -147,7 +153,8 @@ class DoctorController extends Controller
 
     }
 
-    public function educationUpdate(Request $request, $id){
+    public function educationUpdate(Request $request, $id)
+    {
 
         $this->validate($request, [
             'institution' => 'required|max:190',
@@ -168,7 +175,8 @@ class DoctorController extends Controller
 
     }
 
-    public function educationRemove($id){
+    public function educationRemove($id)
+    {
 
         $education_details = Education::where('doctor_id', Auth::guard('doctor')->user()->id)->findOrFail($id);
         $education_details->delete();
@@ -178,14 +186,16 @@ class DoctorController extends Controller
 
     }
 
-    public function experienceAll(){
+    public function experienceAll()
+    {
 
         $page_title = 'All experience Details';
         $experience_details = Experience::where('doctor_id', Auth::guard('doctor')->user()->id)->get();
-        return view('doctor.experience',compact('page_title','experience_details'));
+        return view('doctor.experience', compact('page_title', 'experience_details'));
     }
 
-    public function experienceStore(Request $request){
+    public function experienceStore(Request $request)
+    {
 
         $this->validate($request, [
             'institution' => 'required|max:190',
@@ -205,7 +215,8 @@ class DoctorController extends Controller
 
     }
 
-    public function experienceUpdate(Request $request, $id){
+    public function experienceUpdate(Request $request, $id)
+    {
 
         $this->validate($request, [
             'institution' => 'required|max:190',
@@ -226,7 +237,8 @@ class DoctorController extends Controller
 
     }
 
-    public function experienceRemove($id){
+    public function experienceRemove($id)
+    {
 
         $experience_details = Experience::where('doctor_id', Auth::guard('doctor')->user()->id)->findOrFail($id);
         $experience_details->delete();
@@ -236,32 +248,42 @@ class DoctorController extends Controller
 
     }
 
-    public function scheduleManage(Request $request){
+    public function scheduleManage(Request $request)
+    {
+        if ($request->slot_type != 3) {
 
-        $this->validate($request, [
-            'slot_type' => 'required|numeric|gt:0',
-            'max_serial' => 'sometimes|required|numeric|min:1',
-            'duration' => 'sometimes|required|numeric|gt:0',
-            'serial_day' => 'required|numeric|gt:0',
-            'start_time' => 'sometimes|required',
-            'end_time' => 'sometimes|required'
-        ]);
-
+            $this->validate($request, [
+                'slot_type' => 'required|numeric|gt:0',
+                'max_serial' => 'sometimes|required|numeric|min:1',
+                'duration' => 'sometimes|required|numeric|gt:0',
+                'serial_day' => 'required|numeric|gt:0',
+                'start_time' => 'sometimes|required',
+                'end_time' => 'sometimes|required'
+            ]);
+        }
+        elseif($request->slot_type==3){
+            $this->validate($request, [
+                'slot_type' => 'required|numeric|gt:0',
+                'max_serial' => 'sometimes|required|numeric|min:1',
+                'serial_day' => 'required|numeric|gt:0',
+            ]);
+        }
+        $slot_type=$request->slot_type;
+        $serial_day=$request->serial_day;
         $doctor = Doctor::findOrFail(Auth::guard('doctor')->user()->id);
 
         if ($request->slot_type == 1 && $request->max_serial > 0) {
 
             $serial_or_slot = [];
 
-            for ($i=1; $i <= $request->max_serial; $i++) {
-                array_push($serial_or_slot,"$i");
+            for ($i = 1; $i <= $request->max_serial; $i++) {
+                array_push($serial_or_slot, "$i");
             }
 
             $doctor->serial_or_slot = $serial_or_slot;
             $doctor->max_serial = $request->max_serial;
 
-        }
-        elseif ($request->slot_type == 2 && $request->duration > 0) {
+        } elseif ($request->slot_type == 2 && $request->duration > 0) {
 
             $start_time = Carbon::parse($request->start_time);
             $end_time = Carbon::parse($request->end_time);
@@ -270,9 +292,9 @@ class DoctorController extends Controller
 
             $serial_or_slot = [];
 
-            for ($i=1; $i <= $total_slot; $i++) {
+            for ($i = 1; $i <= $total_slot; $i++) {
 
-                array_push($serial_or_slot,date('h:i:a',strtotime($start_time)));
+                array_push($serial_or_slot, date('h:i:a', strtotime($start_time)));
                 $start_time->addMinutes($request->duration);
             }
 
@@ -280,29 +302,75 @@ class DoctorController extends Controller
             $doctor->duration = $request->duration;
             $doctor->start_time = Carbon::parse($request->start_time)->format('h:i a');
             $doctor->end_time = Carbon::parse($request->end_time)->format('h:i a');
-        }
-        else{
+        } elseif ($request->slot_type == 3) {
+            if($request->get('every-monday')){
+                $day['monday']=$this->returnNextDays('next Monday',$request->max_serial);
+            }
+            if($request->get('every-tuesday')){
+                $day['tuesday']=$this->returnNextDays('next Tuesday',$request->max_serial);
+            }
+            if($request->get('every-wednesday')){
+                $day['wednesday']=$this->returnNextDays('next Wednesday',$request->max_serial);
+            }
+            if($request->get('every-thursday')){
+                $day['thursday']=$this->returnNextDays('next Thursday',$request->max_serial);
+            }
+            if($request->get('every-friday')){
+                $day['friday']=$this->returnNextDays('next Friday',$request->max_serial);
+            }
+            if ($request->get('every-saturday')){
+                $day['saturday']=$this->returnNextDays('next Saturday',$request->max_serial);
+            }
+            if($request->get('every-sunday')){
+                $day['sunday']=$this->returnNextDays('next Sunday',$request->max_serial);
+            }
+            if($request->get('everyday')){
+                $day['everyday']=$this->returnNextDays('next Day',$request->max_serial);
+            }
+
+            $filteredRequest=$request->except([
+                '_token',
+                'slot_type',
+                'serial_day',
+                'max_serial',
+                'recurring_frequency',
+                'every-monday',
+                'every-tuesday',
+                'every-wednesday',
+                'every-thursday',
+                'every-friday',
+                'every-saturday',
+                'every-sunday',
+                'everyday'
+            ]);
+            foreach($filteredRequest as $id => $value){
+                dd( "My key is ". $id . " And My value is ". $value);
+            }
+            dd($day);
+        } else {
             $notify[] = ['error', 'Please select maximum serial or time duration.'];
             return back()->withNotify($notify);
         }
 
-        $doctor->slot_type = $request->slot_type;
-        $doctor->serial_day = $request->serial_day;
+        $doctor->slot_type = $slot_type;
+        $doctor->serial_day = $serial_day;
         $doctor->save();
 
         $notify[] = ['success', 'Time schedule has been updated'];
         return back()->withNotify($notify);
     }
 
-    public function bookedDate(Request $request){
+    public function bookedDate(Request $request)
+    {
 
-        $data = Appointment::where('doctor_id',$request->doctor_id)->where('try',1)->where('d_status',0)->whereDate('booking_date',Carbon::parse($request->date))->get()->map(function($item){
+        $data = Appointment::where('doctor_id', $request->doctor_id)->where('try', 1)->where('d_status', 0)->whereDate('booking_date', Carbon::parse($request->date))->get()->map(function ($item) {
             return str_slug($item->time_serial);
         });
         return response()->json(@$data);
     }
 
-    public function appointmentDetails(){
+    public function appointmentDetails()
+    {
 
         $doctor = Auth::guard('doctor')->user();
 
@@ -324,14 +392,14 @@ class DoctorController extends Controller
         $available_date = [];
         $date = Carbon::now();
 
-        for ($i=0; $i <$doctor->serial_day; $i++) {
-            array_push($available_date, date('Y-m-d',strtotime($date)));
+        for ($i = 0; $i < $doctor->serial_day; $i++) {
+            array_push($available_date, date('Y-m-d', strtotime($date)));
             $date->addDays(1);
         }
 
         $page_title = 'Appointment Booking';
 
-        return view('doctor.appointment.book-appointment',compact('doctor','page_title','available_date'));
+        return view('doctor.appointment.book-appointment', compact('doctor', 'page_title', 'available_date'));
     }
 
     public function appointmentStore(Request $request)
@@ -344,17 +412,17 @@ class DoctorController extends Controller
             'email' => 'required|email',
             'mobile' => 'required|max:50',
             'age' => 'required|numeric|gt:0',
-        ],[
-            'time_serial.required'=>'You did not select any time or serial',
+        ], [
+            'time_serial.required' => 'You did not select any time or serial',
         ]);
 
         $doctor = Doctor::findOrFail(Auth::guard('doctor')->user()->id);
-        $time_serial_check = $doctor->whereJsonContains('serial_or_slot',$request->time_serial)->first();
+        $time_serial_check = $doctor->whereJsonContains('serial_or_slot', $request->time_serial)->first();
 
-        if($time_serial_check){
-            $existed_appointment = Appointment::where('doctor_id',$doctor->id)->where('booking_date',$request->booking_date)->where('time_serial',$request->time_serial)->where('try',1)->where('d_status',0)->first();
+        if ($time_serial_check) {
+            $existed_appointment = Appointment::where('doctor_id', $doctor->id)->where('booking_date', $request->booking_date)->where('time_serial', $request->time_serial)->where('try', 1)->where('d_status', 0)->first();
 
-            if($existed_appointment){
+            if ($existed_appointment) {
                 $notify[] = ['error', 'This appointment is already booked. Try another date or serial'];
                 return back()->withNotify($notify);
             }
@@ -379,34 +447,35 @@ class DoctorController extends Controller
                 'booking_date' => $appointment->booking_date,
                 'time_serial' => $appointment->time_serial,
                 'doctor_name' => $doctor->name,
-                'doctor_fees' => ''.$doctor->fees.' '.$general->cur_text.'',
-            ],$patient);
+                'doctor_fees' => '' . $doctor->fees . ' ' . $general->cur_text . '',
+            ], $patient);
 
             $notify[] = ['success', 'Your appointment has been taken.'];
             return back()->withNotify($notify);
 
-        }else{
+        } else {
             $notify[] = ['error', 'Do not try to cheat us'];
             return back()->withNotify($notify);
         }
     }
 
-    public function allAppointment(){
+    public function allAppointment()
+    {
         $page_title = 'All Appointments';
-        $appointments = Appointment::where('doctor_id',Auth::guard('doctor')->user()->id)->where('try',1)->where('is_complete',0)->where('d_status',0)->latest()->paginate(getPaginate());
+        $appointments = Appointment::where('doctor_id', Auth::guard('doctor')->user()->id)->where('try', 1)->where('is_complete', 0)->where('d_status', 0)->latest()->paginate(getPaginate());
         $empty_message = 'No Appointment Found';
-        return view('doctor.appointment.appointment',compact('page_title','appointments','empty_message'));
+        return view('doctor.appointment.appointment', compact('page_title', 'appointments', 'empty_message'));
     }
 
     public function appointmentView(Request $request, $id)
     {
 
-        $appointment =  Appointment::where('doctor_id',Auth::guard('doctor')->user()->id)->findOrFail($id);
+        $appointment = Appointment::where('doctor_id', Auth::guard('doctor')->user()->id)->findOrFail($id);
 
         if ($request->complete) {
             $appointment->is_complete = 1;
 
-            if($appointment->p_status == 0){
+            if ($appointment->p_status == 0) {
                 $doctor = Doctor::findOrFail($appointment->doctor->id);
                 $doctor->balance += $doctor->fees;
                 $doctor->save();
@@ -421,15 +490,17 @@ class DoctorController extends Controller
         }
     }
 
-    public function appointmentDone(){
+    public function appointmentDone()
+    {
         $page_title = 'Done Appointments';
-        $appointments = Appointment::where('doctor_id',Auth::guard('doctor')->user()->id)->where('try',1)->where('is_complete',1)->where('d_status',0)->latest()->paginate(getPaginate());
+        $appointments = Appointment::where('doctor_id', Auth::guard('doctor')->user()->id)->where('try', 1)->where('is_complete', 1)->where('d_status', 0)->latest()->paginate(getPaginate());
         $empty_message = 'No Done Appointment Found';
-        return view('doctor.appointment.appointment',compact('page_title','appointments','empty_message'));
+        return view('doctor.appointment.appointment', compact('page_title', 'appointments', 'empty_message'));
     }
 
-    public function appointmentRemove($id){
-        $appointment = Appointment::where('doctor_id',Auth::guard('doctor')->user()->id)->findOrFail($id);
+    public function appointmentRemove($id)
+    {
+        $appointment = Appointment::where('doctor_id', Auth::guard('doctor')->user()->id)->findOrFail($id);
         $doctor = Auth::guard('doctor')->user();
         $appointment->d_status = 1;
         $appointment->d_doctor = Auth::guard('doctor')->user()->id;
@@ -440,27 +511,30 @@ class DoctorController extends Controller
             'booking_date' => $appointment->booking_date,
             'time_serial' => $appointment->time_serial,
             'doctor_name' => $doctor->name,
-        ],$patient);
+        ], $patient);
 
         $notify[] = ['success', 'Your appointment goes in trashed appointments'];
         return back()->withNotify($notify);
     }
 
-    public function appointmentTrashed(){
+    public function appointmentTrashed()
+    {
         $page_title = 'Trashed Appointment';
-        $appointments = Appointment::where('doctor_id',Auth::guard('doctor')->user()->id)->where('d_status',1)->latest()->paginate(getPaginate());
+        $appointments = Appointment::where('doctor_id', Auth::guard('doctor')->user()->id)->where('d_status', 1)->latest()->paginate(getPaginate());
         $empty_message = 'No Trashed Appointment Found';
 
-        return view('doctor.appointment.trashed-appointment',compact('page_title','appointments','empty_message'));
+        return view('doctor.appointment.trashed-appointment', compact('page_title', 'appointments', 'empty_message'));
     }
 
-    public function socialIcon(){
+    public function socialIcon()
+    {
         $page_title = 'All Social Icons';
         $social_icons = SocialIcon::where('doctor_id', Auth::guard('doctor')->user()->id)->get();
-        return view('doctor.social',compact('page_title','social_icons'));
+        return view('doctor.social', compact('page_title', 'social_icons'));
     }
 
-    public function socialIconStore(Request $request){
+    public function socialIconStore(Request $request)
+    {
 
         $this->validate($request, [
             'title' => 'required|max:190',
@@ -480,7 +554,8 @@ class DoctorController extends Controller
 
     }
 
-    public function socialIconUpdate(Request $request, $id){
+    public function socialIconUpdate(Request $request, $id)
+    {
 
         $this->validate($request, [
             'title' => 'required|max:190',
@@ -488,7 +563,7 @@ class DoctorController extends Controller
             'url' => 'required|url|max:190',
         ]);
 
-        $icon = SocialIcon::where('doctor_id',Auth::guard('doctor')->user()->id)->findOrFail($id);
+        $icon = SocialIcon::where('doctor_id', Auth::guard('doctor')->user()->id)->findOrFail($id);
 
         $icon->update([
             'title' => $request->title,
@@ -501,9 +576,10 @@ class DoctorController extends Controller
 
     }
 
-    public function  socialIconRemove($id){
+    public function socialIconRemove($id)
+    {
 
-        $icon = SocialIcon::where('doctor_id',Auth::guard('doctor')->user()->id)->findOrFail($id);
+        $icon = SocialIcon::where('doctor_id', Auth::guard('doctor')->user()->id)->findOrFail($id);
         $icon->delete();
 
         $notify[] = ['success', 'Social icon successfuly deleted'];
@@ -511,18 +587,20 @@ class DoctorController extends Controller
 
     }
 
-    public function speciality(Request $request){
+    public function speciality(Request $request)
+    {
 
         $page_title = 'Speciality';
         $speciality = Auth::guard('doctor')->user()->speciality;
-        return view('doctor.speciality',compact('page_title','speciality'));
+        return view('doctor.speciality', compact('page_title', 'speciality'));
     }
 
-    public function specialityUpdate(Request $request){
+    public function specialityUpdate(Request $request)
+    {
 
         $request->validate([
             'speciality.*' => 'sometimes|required',
-        ],[
+        ], [
             'speciality.*.required' => 'Speciality Field is required',
         ]);
 
@@ -634,6 +712,19 @@ class DoctorController extends Controller
             $notify[] = ['error', 'Wrong Verification Code'];
             return back()->withNotify($notify);
         }
+    }
+
+    private function returnNextDays($dayName,$numberOfDays){
+        $mondayTimestamps=array();
+        $timestamp = strtotime(Carbon::now()->toDateTimeString());
+        $currentNext=strtotime($dayName, $timestamp);
+
+        for ($i = 1; $i <= intval($numberOfDays); $i++) {
+            $nextMonday = strtotime($dayName, $currentNext);
+            $currentNext=$nextMonday;
+            array_push($mondayTimestamps,Carbon::parse($currentNext)->toDateString());
+        }
+        return $mondayTimestamps;
     }
 }
 
