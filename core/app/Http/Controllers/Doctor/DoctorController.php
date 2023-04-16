@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Lib\GoogleAuthenticator;
 use App\Rules\FileTypeValidate;
 use App\SocialIcon;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -329,69 +330,151 @@ class DoctorController extends Controller
             $doctor->end_time = Carbon::parse($request->end_time)->format('h:i a');
         } elseif ($request->slot_type == 3) {
             if($request->get('every-monday')){
-                $day['monday']=$this->returnNextDays('next Monday',$request->max_serial);
+                $complete_object['monday']=$this->returnNextDays('next Monday',$request->max_serial);
             }
             if($request->get('every-tuesday')){
-                $day['tuesday']=$this->returnNextDays('next Tuesday',$request->max_serial);
+                $complete_object['tuesday']=$this->returnNextDays('next Tuesday',$request->max_serial);
             }
             if($request->get('every-wednesday')){
-                $day['wednesday']=$this->returnNextDays('next Wednesday',$request->max_serial);
+                $complete_object['wednesday']=$this->returnNextDays('next Wednesday',$request->max_serial);
             }
             if($request->get('every-thursday')){
-                $day['thursday']=$this->returnNextDays('next Thursday',$request->max_serial);
+                $complete_object['thursday']=$this->returnNextDays('next Thursday',$request->max_serial);
             }
             if($request->get('every-friday')){
-                $day['friday']=$this->returnNextDays('next Friday',$request->max_serial);
+                $complete_object['friday']=$this->returnNextDays('next Friday',$request->max_serial);
             }
             if ($request->get('every-saturday')){
-                $day['saturday']=$this->returnNextDays('next Saturday',$request->max_serial);
+                $complete_object['saturday']=$this->returnNextDays('next Saturday',$request->max_serial);
             }
             if($request->get('every-sunday')){
-                $day['sunday']=$this->returnNextDays('next Sunday',$request->max_serial);
+                $complete_object['sunday']=$this->returnNextDays('next Sunday',$request->max_serial);
             }
             if($request->get('everyday')){
-                $day['everyday']=$this->returnNextDays('next Day',$request->max_serial);
+                $complete_object['everyday']=$this->returnNextDays('next Day',$request->max_serial);
             }
 
-            $filteredRequest=$request->except([
-                '_token',
-                'slot_type',
-                'serial_day',
-                'max_serial',
-                'recurring_frequency',
-                'every-monday',
-                'every-tuesday',
-                'every-wednesday',
-                'every-thursday',
-                'every-friday',
-                'every-saturday',
-                'every-sunday',
-                'everyday'
-            ]);
-            $keys=array();
-            $values=array();
-            foreach($filteredRequest as $id => $value){
-                array_push($keys,$id);
-                array_push($values,$value);
-            }
-            foreach ($keys as $index=>$key){
-                $singleKeyArray=explode('-',$key);
-                $firstPart=explode('_',$singleKeyArray[0]);
-                $secondPart=explode('_',$singleKeyArray[1]);
-                if(
-                    $secondPart[0]=='monday' ||
-                    $secondPart[0]=='tuesday' ||
-                    $secondPart[0]=='wednesday' ||
-                    $secondPart[0]=='thursday' ||
-                    $secondPart[0]=='friday' ||
-                    $secondPart[0]=='saturday' ||
-                    $secondPart[0]=='sunday'
-                ){
-                    $this->returnSingleDayObject($day[$secondPart[0]],$index,$firstPart,$values,$keys);
+            /**
+             * Best Code
+             */
+
+// Define days and dates
+//            $object_array = [
+//                "monday" => [
+//                    "2023-04-24",
+//                    "2023-05-01",
+//                    "2023-05-08",
+//                    "2023-05-15",
+//                    "2023-05-22",
+//                    "2023-05-29",
+//                    "2023-06-05",
+//                    "2023-06-12",
+//                    "2023-06-19",
+//                    "2023-06-26"
+//                ],
+//                "tuesday" => [
+//                    "2023-04-25",
+//                    "2023-05-02",
+//                    "2023-05-09",
+//                    "2023-05-16",
+//                    "2023-05-23",
+//                    "2023-05-30",
+//                    "2023-06-06",
+//                    "2023-06-13",
+//                    "2023-06-20",
+//                    "2023-06-27"
+//                ]
+//            ];
+//
+//            $days = ["monday", "tuesday"];
+//
+//            $timeslots = [
+//                "from_time_monday_0_0" => "01:15",
+//                "to_time_monday_0_0" => "02:16",
+//                "from_time_monday_0_1" => "01:16",
+//                "to_time_monday_0_1" => "02:18",
+//                "from_time_tuesday_0_0" => "03:15",
+//                "to_time_tuesday_0_0" => "04:16",
+//                "from_time_tuesday_0_1" => "03:16",
+//                "to_time_tuesday_0_1" => "04:18",
+//            ];
+//
+//            $result = [];
+//
+//            foreach ($days as $day) {
+//                $dates = $object_array[$day];
+//                foreach ($dates as $date) {
+//                    $timeslot_arr = [];
+//                    for ($i = 0; $i < count($timeslots) / 2; $i++) {
+//                        $from_key = "from_time_" . $day . "_" . $i . "_0";
+//                        $to_key = "to_time_" . $day . "_" . $i . "_0";
+//                        if (isset($timeslots[$from_key]) && isset($timeslots[$to_key])) {
+//                            $from_time = $timeslots[$from_key];
+//                            $to_time = $timeslots[$to_key];
+//                            $timeslot_arr[] = ["from_time" => $from_time, "to_time" => $to_time];
+//                        }
+//
+//                        $from_key = "from_time_" . $day . "_" . $i . "_1";
+//                        $to_key = "to_time_" . $day . "_" . $i . "_1";
+//                        if (isset($timeslots[$from_key]) && isset($timeslots[$to_key])) {
+//                            $from_time = $timeslots[$from_key];
+//                            $to_time = $timeslots[$to_key];
+//                            $timeslot_arr[] = ["from_time" => $from_time, "to_time" => $to_time];
+//                        }
+//                    }
+//
+//                    $result[$day][$date] = $timeslot_arr;
+//                }
+//            }
+//
+//
+//            dd($result);
+            /**
+             * Best Code End
+             */
+            $input=$request->toArray();
+            $days = [];
+            foreach($input as $key => $value) {
+                if (strpos($key, 'every-') === 0 && $value == 'true') {
+                    $day = str_replace('every-', '', $key);
+                    $days[] = ucfirst($day);
                 }
             }
-            dd($day);
 
+            $dates = [];
+            foreach ($days as $day) {
+                $start_date = new DateTime('next ' . $day);
+                for ($i = 0; $i < $input['max_serial']; $i++) {
+                    $dates[$day][] = $start_date->modify('next ' . $day)->format('Y-m-d');
+                }
+            }
+
+            $timeslots = [];
+            foreach ($days as $day) {
+                $day_timeslots = [];
+                for ($i = 0; $i < $input['max_serial']; $i++) {
+                    for ($j = 0; $j < 10; $j++) {
+                        $from_time_key = "from_time_" . strtolower($day) . "_" . $i . "_" . $j;
+                        $to_time_key = "to_time_" . strtolower($day) . "_" . $i . "_" . $j;
+                        if (isset($input[$from_time_key]) && isset($input[$to_time_key])) {
+                            $day_timeslots[$i][$j]['from_time'] = $input[$from_time_key];
+                            $day_timeslots[$i][$j]['to_time'] = $input[$to_time_key];
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                $timeslots[$day] = $day_timeslots;
+            }
+
+            $result = [];
+            foreach ($days as $day) {
+                foreach ($dates[$day] as $date) {
+                    $result[$day][$date] = $timeslots[$day];
+                }
+            }
+
+            dd($result);
         } else {
             $notify[] = ['error', 'Please select maximum serial or time duration.'];
             return back()->withNotify($notify);
