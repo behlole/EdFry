@@ -459,6 +459,7 @@ class DoctorController extends Controller
                         if (isset($input[$from_time_key]) && isset($input[$to_time_key])) {
                             $day_timeslots[$i][$j]['from_time'] = $input[$from_time_key];
                             $day_timeslots[$i][$j]['to_time'] = $input[$to_time_key];
+                            $day_timeslots[$i][$j]['available']=true;
                         } else {
                             break;
                         }
