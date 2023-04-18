@@ -44,12 +44,6 @@
                                 <input class="form-control" type="text" placeholder="@lang('No time selected yet')"
                                        value="{{ $doctor->end_time }}" readonly>
                             </div>
-                            <div class="col-md-3 month-select @if($doctor->slot_type !=3) d-none @endif">
-                                <label
-                                    class="form-control-label font-weight-bold">@lang('Current Week Time')</label>
-                                <input class="form-control" type="text" placeholder="@lang('No Week selected yet')"
-                                       value="{{ $doctor->week_time }}" readonly>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -127,7 +121,7 @@
         (function ($) {
             'use strict';
             $('select[name=slot_type]').val("{{$doctor->slot_type}}");
-            let weekConcurrency = ['monday', 'tuesday','wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            let weekConcurrency = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             let check_slot_type = $('select[name="slot_type"]').val();
             let time_div = `<div class="card-body time_div">
                             <div class="form-row">
@@ -162,13 +156,13 @@
                             <div class="col-md-4">
                                 <label class="form-control-label font-weight-bold">Select Concurrency Frequency</label>
                                 <select class="form-control" name="recurring_frequency" id="recurring_frequency" multiple>
-                                    <option value="monday">Every Monday</option>
-                                    <option value="tuesday">Every Tuesday</option>
-                                    <option value="wednesday">Every Wednesday</option>
-                                    <option value="thursday">Every Thursday</option>
-                                    <option value="friday">Every Friday</option>
-                                    <option value="saturday">Every Saturday</option>
-                                    <option value="sunday">Every Sunday</option>
+                                    <option value="Monday">Every Monday</option>
+                                    <option value="Tuesday">Every Tuesday</option>
+                                    <option value="Wednesday">Every Wednesday</option>
+                                    <option value="Thursday">Every Thursday</option>
+                                    <option value="Friday">Every Friday</option>
+                                    <option value="Saturday">Every Saturday</option>
+                                    <option value="Sunday">Every Sunday</option>
                                 </select>
                             </div>
                         </div>
@@ -184,6 +178,7 @@
                     switchOnClick: true
                 });
             }
+            let recurringFrequency = [];
 
             if (check_slot_type == 2) {
 
@@ -194,9 +189,35 @@
                 $('#slot-value').html(serial_div);
             }
             if (check_slot_type == 3) {
-                $('#weekly_div').removeClass('d-none');
+                let weeklyFrequency = "{{$doctor->weekly_frequency}}"
+                weeklyFrequency = weeklyFrequency.replace(/&quot;/g, '"');
+                weeklyFrequency = JSON.parse(weeklyFrequency.replace(/\\/g, "").slice(1, -1));
+
+                $('select[name=recurring_frequency]').val(Object.keys(weeklyFrequency));
+
+                $('#slot-value').html(weekly_div);
+                $('.weekly-frequency-chart').removeClass('d-none')
+                $('#slot-value').html(weekly_div)
+                $('#recurring_frequency').selectpicker().on('changed.bs.select', (e, clickedIndex) => {
+                    if (recurringFrequency.includes(weekConcurrency[clickedIndex])) {
+                        recurringFrequency.splice(recurringFrequency.indexOf(weekConcurrency[clickedIndex]), 1);
+                    } else {
+                        recurringFrequency.push(weekConcurrency[clickedIndex]);
+                    }
+                    updateConcurrencyView(recurringFrequency)
+                })
+
+                $('select[name=recurring_frequency]').val(Object.keys(weeklyFrequency));
+                Object.keys(weeklyFrequency).forEach((singleDay)=>{
+                    if (recurringFrequency.includes(singleDay)) {
+                        recurringFrequency.splice(recurringFrequency.indexOf(singleDay), 1);
+                    } else {
+                        recurringFrequency.push(singleDay);
+                    }
+                })
+                $('#recurring_frequency').selectpicker('refresh');
+                updateConcurrencyView(recurringFrequency)
             }
-            let recurringFrequency = [];
             $("#slot-type").on('change', function () {
                 var check_slot_type = $('select[name="slot_type"]').val();
                 removeAllDivs()
@@ -237,11 +258,11 @@
                 $('.time_div').remove();
             }
 
-            function addTimeRow(singleDay,index) {
-                return $(`#body-${singleDay}`).append(returnTimeRow(singleDay,index,document.getElementById(`body-${singleDay}`).childElementCount))
+            function addTimeRow(singleDay, index) {
+                return $(`#body-${singleDay}`).append(returnTimeRow(singleDay, index, document.getElementById(`body-${singleDay}`).childElementCount))
             }
 
-            function returnTimeRow(singleDay,index,latestChildIndex) {
+            function returnTimeRow(singleDay, index, latestChildIndex) {
                 return `<div class="flex flex-row justify-content-between" id="row-${singleDay}-${index}-${latestChildIndex}"  style="display: flex">
                                     <div style="width: 40%">
                                      <label for="from_time_${singleDay}_${index}_${latestChildIndex}">From Time:</label>
@@ -281,9 +302,9 @@
                     </div>
 `)
                     $(`#button-${index}`).on('click', () => {
-                        addTimeRow(singleDay,index)
-                        let childElementCount=document.getElementById(`body-${singleDay}`).childElementCount-1;
-                        $(`#remove-button-${singleDay}-${index}-${childElementCount}`).on('click',()=>{
+                        addTimeRow(singleDay, index)
+                        let childElementCount = document.getElementById(`body-${singleDay}`).childElementCount - 1;
+                        $(`#remove-button-${singleDay}-${index}-${childElementCount}`).on('click', () => {
                             $(`#row-${singleDay}-${index}-${childElementCount}`).remove()
                         })
                         timePicker()

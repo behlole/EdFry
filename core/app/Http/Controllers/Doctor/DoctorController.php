@@ -98,6 +98,7 @@ class DoctorController extends Controller
     {
         $page_title = 'Manage Schedule';
         $doctor = Auth::guard('doctor')->user();
+        $doctor->weekly_frequency=json_encode($doctor->weekly_frequency);
         return view('doctor.schedule', compact('page_title', 'doctor'));
     }
 
@@ -249,31 +250,6 @@ class DoctorController extends Controller
 
     }
 
-    private function returnSingleDayObject(&$day,$index,$firstPart,$values,$keys)
-    {
-//        dd($values);
-        dd($keys);
-        foreach($day as $secondIndex=>$singleTime){
-            if ($firstPart[0]=='from'){
-                $day[$secondIndex]=['from'=>$values[$index],'incomingDate'=>$singleTime];
-            }
-            elseif($firstPart[0]=='to'){
-                $day[$secondIndex]=['to'=>$values[$index],'date'=>$singleTime['incomingDate'],'from'=>$singleTime['from']];
-            }
-        }
-    }
-    private function returnNextDays($dayName,$numberOfDays){
-        $mondayTimestamps=array();
-        $timestamp = strtotime(Carbon::now()->toDateTimeString());
-        $currentNext=strtotime($dayName, $timestamp);
-
-        for ($i = 1; $i <= intval($numberOfDays); $i++) {
-            $nextMonday = strtotime($dayName, $currentNext);
-            $currentNext=$nextMonday;
-            array_push($mondayTimestamps,Carbon::parse($currentNext)->toDateString());
-        }
-        return $mondayTimestamps;
-    }
     public function scheduleManage(Request $request)
     {
         if ($request->slot_type != 3) {
@@ -286,16 +262,15 @@ class DoctorController extends Controller
                 'start_time' => 'sometimes|required',
                 'end_time' => 'sometimes|required'
             ]);
-        }
-        elseif($request->slot_type==3){
+        } elseif ($request->slot_type == 3) {
             $this->validate($request, [
                 'slot_type' => 'required|numeric|gt:0',
                 'max_serial' => 'sometimes|required|numeric|min:1',
                 'serial_day' => 'required|numeric|gt:0',
             ]);
         }
-        $slot_type=$request->slot_type;
-        $serial_day=$request->serial_day;
+        $slot_type = $request->slot_type;
+        $serial_day = $request->serial_day;
         $doctor = Doctor::findOrFail(Auth::guard('doctor')->user()->id);
 
         if ($request->slot_type == 1 && $request->max_serial > 0) {
@@ -329,9 +304,9 @@ class DoctorController extends Controller
             $doctor->start_time = Carbon::parse($request->start_time)->format('h:i a');
             $doctor->end_time = Carbon::parse($request->end_time)->format('h:i a');
         } elseif ($request->slot_type == 3) {
-            $input=$request->toArray();
+            $input = $request->toArray();
             $days = [];
-            foreach($input as $key => $value) {
+            foreach ($input as $key => $value) {
                 if (strpos($key, 'every-') === 0 && $value == 'true') {
                     $day = str_replace('every-', '', $key);
                     $days[] = ucfirst($day);
@@ -356,7 +331,7 @@ class DoctorController extends Controller
                         if (isset($input[$from_time_key]) && isset($input[$to_time_key])) {
                             $day_timeslots[$i][$j]['from_time'] = $input[$from_time_key];
                             $day_timeslots[$i][$j]['to_time'] = $input[$to_time_key];
-                            $day_timeslots[$i][$j]['available']=true;
+                            $day_timeslots[$i][$j]['available'] = true;
                         } else {
                             break;
                         }
@@ -372,7 +347,7 @@ class DoctorController extends Controller
                 }
             }
 
-            $doctor->weekly_frequency=serialize($result);
+            $doctor->weekly_frequency = $result;
             $doctor->max_serial = $request->max_serial;
         } else {
             $notify[] = ['error', 'Please select maximum serial or time duration.'];
