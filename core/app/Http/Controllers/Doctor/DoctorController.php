@@ -329,35 +329,6 @@ class DoctorController extends Controller
             $doctor->start_time = Carbon::parse($request->start_time)->format('h:i a');
             $doctor->end_time = Carbon::parse($request->end_time)->format('h:i a');
         } elseif ($request->slot_type == 3) {
-            if($request->get('every-monday')){
-                $complete_object['monday']=$this->returnNextDays('next Monday',$request->max_serial);
-            }
-            if($request->get('every-tuesday')){
-                $complete_object['tuesday']=$this->returnNextDays('next Tuesday',$request->max_serial);
-            }
-            if($request->get('every-wednesday')){
-                $complete_object['wednesday']=$this->returnNextDays('next Wednesday',$request->max_serial);
-            }
-            if($request->get('every-thursday')){
-                $complete_object['thursday']=$this->returnNextDays('next Thursday',$request->max_serial);
-            }
-            if($request->get('every-friday')){
-                $complete_object['friday']=$this->returnNextDays('next Friday',$request->max_serial);
-            }
-            if ($request->get('every-saturday')){
-                $complete_object['saturday']=$this->returnNextDays('next Saturday',$request->max_serial);
-            }
-            if($request->get('every-sunday')){
-                $complete_object['sunday']=$this->returnNextDays('next Sunday',$request->max_serial);
-            }
-            if($request->get('everyday')){
-                $complete_object['everyday']=$this->returnNextDays('next Day',$request->max_serial);
-            }
-
-
-            /**
-             * Best Code End
-             */
             $input=$request->toArray();
             $days = [];
             foreach($input as $key => $value) {
@@ -401,7 +372,8 @@ class DoctorController extends Controller
                 }
             }
 
-            dd($result);
+            $doctor->weekly_frequency=serialize($result);
+            $doctor->max_serial = $request->max_serial;
         } else {
             $notify[] = ['error', 'Please select maximum serial or time duration.'];
             return back()->withNotify($notify);
