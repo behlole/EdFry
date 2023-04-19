@@ -16,13 +16,11 @@ use App\SupportMessage;
 use App\SupportTicket;
 use App\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use PhpParser\Comment\Doc;
-use Spatie\GoogleCalendar\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
 use Socialite;
+
 class SiteController extends Controller
 {
 
@@ -107,6 +105,26 @@ class SiteController extends Controller
             array_push($available_date, date("Y-m-d", strtotime($date)));
             $date->addDays(1);
         }
+
+        if ($doctor->slot_type == 3) {
+            $available_date=[];
+
+            foreach (json_decode($doctor->weekly_frequency) as $day => $dates) {
+                foreach ($dates as $date => $slots) {
+                    $date_with_slots = array(
+                        'date' => $date,
+                        'day' => $day,
+                        'slots' => $slots
+                    );
+                    array_push($available_date, $date_with_slots);
+                }
+            }
+            usort($available_date, function($a, $b)
+            {
+                return $a['date'] > $b['date'];
+            });
+        }
+
         return view($this->activeTemplate . "booking", compact("available_date", "doctor", "page_title"));
 
     }
@@ -119,7 +137,7 @@ class SiteController extends Controller
         return response()->json(@$data);
     }
 
-      public function appointmentStore(Request $request, $id)
+    public function appointmentStore(Request $request, $id)
     {
         $this->validate($request, [
             "booking_date" => "required|date",
@@ -173,7 +191,7 @@ class SiteController extends Controller
         $zoom_controller = new ZoomMeetingController();
         $data = $zoom_controller->store($zoom_data);
         $user = auth()->guard('user')->user();
-        try{
+        try {
             $appointment = Appointment::create([
                 "booking_date" => Carbon::parse($request->booking_date),
                 "time_serial" => $request->time_serial,
@@ -188,10 +206,9 @@ class SiteController extends Controller
                 "trx" => $trx,
                 "join_url" => $data['data']['join_url'],
                 "host_url" => $data['data']['start_url'],
-             ]);
-        }
-        catch(\Exception $e){
-              $notify[] = ["error", "Please add Mobile Number in your profile"];
+            ]);
+        } catch (\Exception $e) {
+            $notify[] = ["error", "Please add Mobile Number in your profile"];
             return back()->withNotify($notify);
         }
         if ($redirect == 1) {
@@ -436,72 +453,78 @@ class SiteController extends Controller
         imagejpeg($image);
         imagedestroy($image);
     }
-    public function redirectLinkedin(){
+
+    public function redirectLinkedin()
+    {
         return Socialite::driver('linkedin')->redirect();
     }
 
-    public function redirectGoogle(){
+    public function redirectGoogle()
+    {
         return Socialite::driver('google')->redirect();
     }
-    public function linkedinCallBack(Request $request){
-         try {
-     
+
+    public function linkedinCallBack(Request $request)
+    {
+        try {
+
             $user = Socialite::driver('linkedin')->stateless()->user();
-      
-      
+
+
             $linkedinUser = User::where('email', $user->email)->first();
-      
-            if($linkedinUser){
-      
-            Auth::guard('user')->loginUsingId($linkedinUser->id);
-     
+
+            if ($linkedinUser) {
+
+                Auth::guard('user')->loginUsingId($linkedinUser->id);
+
                 return redirect()->intended('/');
-      
-            }else{
+
+            } else {
                 $linkedinUser = User::create([
                     'username' => $user->id,
-                    'firstname'=>$user->first_name,
-                    'lastname'=>$user->last_name,
+                    'firstname' => $user->first_name,
+                    'lastname' => $user->last_name,
                     'email' => $user->email,
                     'password' => encrypt('admin12345')
                 ]);
-                 Auth::guard('user')->loginUsingId($linkedinUser->id);
+                Auth::guard('user')->loginUsingId($linkedinUser->id);
                 // return redirect('/');
                 return redirect()->intended();
             }
-     
+
         } catch (Exception $e) {
             dd($e->getMessage());
+        }
     }
-}
 
-public function googleCallBack(Request $request){
-     try {
-     
+    public function googleCallBack(Request $request)
+    {
+        try {
+
             $user = Socialite::driver('google')->stateless()->user();
-            
-               
+
+
             $linkedinUser = User::where('email', $user->email)->first();
-            if($linkedinUser){
-            Auth::guard('user')->loginUsingId($linkedinUser->id);
+            if ($linkedinUser) {
+                Auth::guard('user')->loginUsingId($linkedinUser->id);
                 // return redirect('/');
-                 return redirect()->intended('/');
-      
-            }else{
+                return redirect()->intended('/');
+
+            } else {
                 $linkedinUser = User::create([
                     'username' => $user->id,
-                    'firstname'=>$user->first_name,
-                    'lastname'=>$user->last_name,
+                    'firstname' => $user->first_name,
+                    'lastname' => $user->last_name,
                     'email' => $user->email,
                     'password' => encrypt('admin12345')
                 ]);
-                 Auth::guard('user')->loginUsingId($linkedinUser->id);
+                Auth::guard('user')->loginUsingId($linkedinUser->id);
                 // return redirect('/');
-                 return redirect()->intended();
+                return redirect()->intended();
             }
-     
+
         } catch (Exception $e) {
-           return redirect('/')->withError(['message'=>$e->getMessage()]);
+            return redirect('/')->withError(['message' => $e->getMessage()]);
+        }
     }
-}
 }

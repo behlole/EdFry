@@ -173,25 +173,35 @@
                                                             </div>
                                                             <div class="overview-date-select">
                                                                 <select class="form-control date-select"
-                                                                        name="booking_date" required>
-                                                                    @foreach ($available_date as $item)
-                                                                        <option
-                                                                            value="{{ $item }}">{{ __($item) }}</option>
-                                                                    @endforeach
+                                                                        name="booking_date" id="booking_date" required>
+                                                                    @if($doctor->slot_type==3)
+                                                                        @foreach ($available_date as $item)
+                                                                            <option
+                                                                                value="{{ $item['date'] }}">{{ __($item['date']) }}</option>
+                                                                        @endforeach
+                                                                    @else
+                                                                        @foreach ($available_date as $item)
+                                                                            <option
+                                                                                value="{{ $item }}">{{ __($item) }}</option>
+                                                                        @endforeach
+                                                                    @endif
                                                                 </select>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <ul class="clearfix">
-                                                        @foreach ($doctor->serial_or_slot as $item)
-                                                            <li>
-                                                                <a href="javascript:void(0)"
-                                                                   class="available-time active-time item{{str_slug($item)}}"
-                                                                   data-value="{{ $item }}">
-                                                                    <span>{{ $item }}</span>
-                                                                </a>
-                                                            </li>
-                                                        @endforeach
+                                                    <ul class="clearfix" id="slot_date">
+                                                        @if($doctor->slot_type!=3)
+                                                            @foreach ($doctor->serial_or_slot as $item)
+                                                                <li>
+                                                                    <a href="javascript:void(0)"
+                                                                       class="available-time active-time item{{str_slug($item)}}"
+                                                                       data-value="{{ $item }}">
+                                                                        <span>{{ $item }}</span>
+                                                                    </a>
+                                                                </li>
+                                                            @endforeach
+                                                        @endif
+
                                                         <input type="hidden" name="time_serial" class="time" required>
                                                     </ul>
                                                 </div>
@@ -208,9 +218,7 @@
                                                                         </div>
                                                                         <div
                                                                             class="col-lg-12 form-group d-flex flex-wrap justify-content-between">
-                                                                            <!--<button type="submit"-->
-                                                                            <!--        class="cmn-btn payment-system"-->
-                                                                            <!--        data-value="2">@lang('Pay In Cash')</button>-->
+                                                                            @lang('Pay In Cash')</button>
 
                                                                             @if ($general->op)
                                                                                 <button type="submit"
@@ -280,31 +288,10 @@
             var url = "{{route('bookeddate')}}";
             var date = booking;
             var id = '<?php echo $doctor->id; ?>';
+            var slot_type =<?php echo $doctor->slot_type; ?>;
             var data = {date: date, doctor_id: id}
-
-            $.get(url, data, function (response) {
-                $('.time').val('');
-                if (response.length == 0) {
-                    $('.available-time').removeClass('disabled').addClass('active-time');
-                } else {
-                    $('.available-time').removeClass('disabled').addClass('active-time');
-                    $.each(response, function (key, value) {
-                        var item = $(`.item${value}`);
-                        item.addClass('disabled').removeClass('active-time');
-                    });
-                }
-            });
-
-
-            $('select[name=booking_date]').on('change', function () {
-                $('.available-time').removeClass('active');
-                var date = $('#date').text($(this).val());
-
-                var url = "{{route('bookeddate')}}";
-                var date = $(this).val();
-                var id = '<?php echo $doctor->id; ?>';
-                var data = {date: date, doctor_id: id}
-
+            let available_date =@json($available_date);
+            if (slot_type != 3) {
                 $.get(url, data, function (response) {
                     $('.time').val('');
                     if (response.length == 0) {
@@ -317,6 +304,56 @@
                         });
                     }
                 });
+            } else {
+                if (slot_type != 3) {
+                    $.get(url, data, function (response) {
+                        $('.time').val('');
+                        if (response.length == 0) {
+                            $('.available-time').removeClass('disabled').addClass('active-time');
+                        } else {
+                            $('.available-time').removeClass('disabled').addClass('active-time');
+                            $.each(response, function (key, value) {
+                                var item = $(`.item${value}`);
+                                item.addClass('disabled').removeClass('active-time');
+                            });
+                        }
+                    });
+                } else {
+                    $('#slot_date').html('');
+                    assignSlots(available_date, date);
+                }
+            }
+
+
+            $('select[name=booking_date]').on('change', function () {
+                $('.available-time').removeClass('active');
+                var date = $('#date').text($(this).val());
+
+                var url = "{{route('bookeddate')}}";
+                var date = $(this).val();
+                var id = '<?php echo $doctor->id; ?>';
+                let slot_type = '<?php echo $doctor->slot_type; ?>';
+
+                let available_date =@json($available_date);
+                var data = {date: date, doctor_id: id}
+                if (slot_type != 3) {
+                    $.get(url, data, function (response) {
+                        $('.time').val('');
+                        if (response.length == 0) {
+                            $('.available-time').removeClass('disabled').addClass('active-time');
+                        } else {
+                            $('.available-time').removeClass('disabled').addClass('active-time');
+                            $.each(response, function (key, value) {
+                                var item = $(`.item${value}`);
+                                item.addClass('disabled').removeClass('active-time');
+                            });
+                        }
+                    });
+                } else {
+                    $('#slot_date').html('');
+                    assignSlots(available_date, date);
+                }
+
             });
 
 
@@ -350,6 +387,24 @@
                 $('.appointment-from').trigger("reset");
 
             });
+
+            function assignSlots(available_dates, date) {
+                available_date.forEach((singleDate) => {
+                    if (singleDate.date == date) {
+                        singleDate.slots[Object.keys(singleDate.slots)].forEach((singleSlot, index) => {
+                            $('#slot_date').append(`<li>
+                                          <a href="javascript:void(0)"
+                                         class="available-time active-time item${singleSlot['from_time'] + ' - ' + singleSlot['to_time']}"
+                                         data-value="${singleSlot['from_time'] + ' - ' + singleSlot['to_time']}">
+                                         <span>${singleSlot['from_time']} - ${singleSlot['to_time']}</span>
+                                         </a>
+                                         </li>
+                                `)
+
+                        })
+                    }
+                })
+            }
         })(jQuery);
     </script>
 @endpush
