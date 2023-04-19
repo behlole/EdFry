@@ -387,7 +387,6 @@
                 $('.appointment-from').trigger("reset");
 
             });
-
             function assignSlots(available_dates, date) {
                 available_date.forEach((singleDate) => {
                     if (singleDate.date == date) {
