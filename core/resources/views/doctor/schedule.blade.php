@@ -193,6 +193,7 @@
                 weeklyFrequency = weeklyFrequency.replace(/&quot;/g, '"');
                 weeklyFrequency = JSON.parse(weeklyFrequency.replace(/\\/g, "").slice(1, -1));
 
+
                 $('select[name=recurring_frequency]').val(Object.keys(weeklyFrequency));
 
                 $('#slot-value').html(weekly_div);
@@ -206,9 +207,8 @@
                     }
                     updateConcurrencyView(recurringFrequency)
                 })
-
                 $('select[name=recurring_frequency]').val(Object.keys(weeklyFrequency));
-                Object.keys(weeklyFrequency).forEach((singleDay)=>{
+                Object.keys(weeklyFrequency).forEach((singleDay) => {
                     if (recurringFrequency.includes(singleDay)) {
                         recurringFrequency.splice(recurringFrequency.indexOf(singleDay), 1);
                     } else {
@@ -217,6 +217,21 @@
                 })
                 $('#recurring_frequency').selectpicker('refresh');
                 updateConcurrencyView(recurringFrequency)
+                recurringFrequency.forEach((singleFrequency, index) => {
+                    let weeklyFrequency = "{{$doctor->weekly_frequency}}"
+                    weeklyFrequency = weeklyFrequency.replace(/&quot;/g, '"');
+                    weeklyFrequency = JSON.parse(weeklyFrequency.replace(/\\/g, "").slice(1, -1));
+                    let allTimeSlots = weeklyFrequency
+                        [singleFrequency]
+                        [
+                        Object.keys(
+                            weeklyFrequency[singleFrequency])
+                            [0]
+                        ]
+                    allTimeSlots[index].forEach((singleSlot)=>{
+                        addTimeRow(singleFrequency, index, singleSlot.from_time, singleSlot.to_time)
+                    })
+                })
             }
             $("#slot-type").on('change', function () {
                 var check_slot_type = $('select[name="slot_type"]').val();
@@ -258,20 +273,27 @@
                 $('.time_div').remove();
             }
 
-            function addTimeRow(singleDay, index) {
-                return $(`#body-${singleDay}`).append(returnTimeRow(singleDay, index, document.getElementById(`body-${singleDay}`).childElementCount))
+            function addTimeRow(singleDay, index, from_time = null, to_time = null) {
+                return $(`#body-${singleDay}`).append(
+                    returnTimeRow(
+                        singleDay,
+                        index,
+                        document.getElementById(`body-${singleDay}`).childElementCount,
+                        from_time,
+                        to_time
+                    ))
             }
 
-            function returnTimeRow(singleDay, index, latestChildIndex) {
+            function returnTimeRow(singleDay, index, latestChildIndex, from_time = null, to_time = null) {
                 return `<div class="flex flex-row justify-content-between" id="row-${singleDay}-${index}-${latestChildIndex}"  style="display: flex">
                                     <div style="width: 40%">
                                      <label for="from_time_${singleDay}_${index}_${latestChildIndex}">From Time:</label>
-                                      <input class="form-control timepicker" value="0.00" type="text" name="from_time_${singleDay}_${index}_${latestChildIndex}" id="from_time_${singleDay}_${index}_${latestChildIndex}" />
+                                      <input class="form-control timepicker" value="${from_time == null ? '0.00' : from_time}" type="text" name="from_time_${singleDay}_${index}_${latestChildIndex}" id="from_time_${singleDay}_${index}_${latestChildIndex}" />
                                     </div>
                                     <div style="width: 40%">
                                                     <label for="to_time_${singleDay}_${index}_${latestChildIndex}">To Time:</label>
                                     <div style="display: flex;flex-direction: row">
-                                         <input class="form-control timepicker" style="width: 80%" value="0.00" type="text" name="to_time_${singleDay}_${index}_${latestChildIndex}" id="to_time_${singleDay}_${index}_${latestChildIndex}" />
+                                         <input class="form-control timepicker" style="width: 80%" value="${to_time == null ? '0.00' : to_time}" type="text" name="to_time_${singleDay}_${index}_${latestChildIndex}" id="to_time_${singleDay}_${index}_${latestChildIndex}" />
                                         <button type="button" class="btn btn-outline-danger" id="remove-button-${singleDay}-${index}-${latestChildIndex}" style="width: 20%">X</button>
                                      </div>
                                     </div>
@@ -300,7 +322,7 @@
                         </div>
                       </div>
                     </div>
-`)
+                    `)
                     $(`#button-${index}`).on('click', () => {
                         addTimeRow(singleDay, index)
                         let childElementCount = document.getElementById(`body-${singleDay}`).childElementCount - 1;

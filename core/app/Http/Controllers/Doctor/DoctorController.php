@@ -326,8 +326,8 @@ class DoctorController extends Controller
                 $day_timeslots = [];
                 for ($i = 0; $i < $input['max_serial']; $i++) {
                     for ($j = 0; $j < 10; $j++) {
-                        $from_time_key = "from_time_" . strtolower($day) . "_" . $i . "_" . $j;
-                        $to_time_key = "to_time_" . strtolower($day) . "_" . $i . "_" . $j;
+                        $from_time_key = "from_time_" . $day . "_" . $i . "_" . $j;
+                        $to_time_key = "to_time_" .$day . "_" . $i . "_" . $j;
                         if (isset($input[$from_time_key]) && isset($input[$to_time_key])) {
                             $day_timeslots[$i][$j]['from_time'] = $input[$from_time_key];
                             $day_timeslots[$i][$j]['to_time'] = $input[$to_time_key];
