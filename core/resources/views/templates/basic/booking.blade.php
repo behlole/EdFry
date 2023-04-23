@@ -267,7 +267,6 @@
         </div>
     </section>
 @endsection
-
 @push('script')
     <script>
 
